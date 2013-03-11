@@ -39,7 +39,7 @@ class BadAddons:
   def parse_results(self, result_string):
     """Parses JSON search results and returns 1 if it's probably malware."""
     result = json.loads(result_string)
-    if not result["items"]:
+    if "items" not in result:
       raise Exception("Didn't get meaningful results")
     is_relevant = False
     num_bad = 0
