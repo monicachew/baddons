@@ -15,7 +15,7 @@ class BadAddons:
 
   def __init__(self, apikey):
     self.APIKEY = apikey
-    self.BADDONS = re.compile("crash|uninstall|error|remove|stealth",
+    self.BADDONS = re.compile("crash|uninstall|error|remove|stealth|malware",
                               re.IGNORECASE)
     self.RELEVANT = re.compile("Firefox|extension|addon|Mozilla",
                                re.IGNORECASE)
@@ -40,12 +40,12 @@ class BadAddons:
     """Parses JSON search results and returns 1 if it's probably malware."""
     result = json.loads(result_string)
     if "items" not in result:
-      raise Exception("Didn't get meaningful results")
+      raise Exception("Didn't get meaningful results", result_string)
     is_relevant = False
     num_bad = 0
     for i in result["items"]:
       if i["kind"] != "customsearch#result":
-        raise Exception("Error in results")
+        raise Exception("Unexpected results", result_string)
       if self.BADDONS.search(i["title"]) or self.BADDONS.search(i["snippet"]):
         num_bad += 1
       if self.RELEVANT.search(i["title"]) or self.RELEVANT.search(i["snippet"]):
@@ -83,7 +83,7 @@ def main():
   try:
     f_api = open(".apikey", "r")
   except IOError as e:
-    sys.exit("Can't find file: %s" % e)
+    sys.exit("Can't find apikey: %s" % e)
   apikey = f_api.readline().strip()
   baddons = BadAddons(apikey)
   baddons.process_addons(sys.argv[1], sys.argv[2])
